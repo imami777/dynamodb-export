@@ -15,7 +15,7 @@ from boto3 import Session
 @click.option('--format', '-f', help='format file [csv/json].', default='csv')
 @click.option('--output', '-o', help='output filename.', default=None)
 def main(table, format, output, profile):
-    """Export DynamoDb Table."""
+    """Export DynamoDb Table"""
     profile = profile or 'default'
     print('export dynamodb: {}'.format(table))
     data = read_dynamodb_data(table, profile)
