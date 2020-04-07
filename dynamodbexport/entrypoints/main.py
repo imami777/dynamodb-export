@@ -7,6 +7,7 @@ import csv
 import re
 from boto3 import Session
 
+
 @click.command()
 @click.version_option(version='1.0')
 @click.option('--profile', '-p', help='config profile name.')
@@ -14,12 +15,10 @@ from boto3 import Session
 @click.option('--format', '-f', help='format file [csv/json].', default='csv')
 @click.option('--output', '-o', help='output filename.', default=None)
 def main(table, format, output, profile):
-
     """Export DynamoDb Table."""
     profile = profile or 'default'
     print('export dynamodb: {}'.format(table))
     data = read_dynamodb_data(table, profile)
-    #print(data['items'])
     if format != 'csv':
         output_filename = table + '.json'
         if output is not None:
@@ -142,6 +141,7 @@ def write_to_csv_file(data, filename):
                                 quotechar='"')
         writer.writeheader()
         writer.writerows(data['items'])
+
 
 def strip_ssml_tags(data):
     """
