@@ -6,19 +6,21 @@ import json
 import csv
 import re
 from boto3 import Session
+from boto3.dynamodb.conditions import Attr
 
 
 @click.command()
 @click.version_option(version='1.0')
 @click.option('--profile', '-p', help='config profile name.')
 @click.option('--table', '-t', help='table name.')
+@click.option('--recette', '-r', help='recipe code.', default=None)
 @click.option('--format', '-f', help='format file [csv/json].', default='csv')
 @click.option('--output', '-o', help='output filename.', default=None)
-def main(table, format, output, profile):
+def main(table, recette, format, output, profile):
     """Export DynamoDb Table"""
     profile = profile or 'default'
     print('export dynamodb: {}'.format(table))
-    data = read_dynamodb_data(table, profile)
+    data = read_dynamodb_data(table, recette, profile)
     if format != 'csv':
         output_filename = table + '.json'
         if output is not None:
@@ -38,14 +40,13 @@ def get_keys(data):
     return keys
 
 
-def read_dynamodb_data(table, profile):
+def read_dynamodb_data(table, recette, profile):
     """
     Scan all item from dynamodb.
     :param table: String
     :return: Data in Dictionary Format.
     """
     print('Connecting to AWS DynamoDb')
-
     session = Session(profile_name=profile)
     dynamodb_resource = session.resource('dynamodb')
     table = dynamodb_resource.Table(table)
@@ -57,7 +58,15 @@ def read_dynamodb_data(table, profile):
     keys_set = set(keys)
     item_count = table.item_count
 
-    raw_data = table.scan()
+    if recette is not None:
+        raw_data = table.scan(
+            FilterExpression=Attr("codeRecette").eq(recette)
+        )
+    else:
+        raw_data = table.scan(
+            FilterExpression=Attr("noEtape").eq("0")
+        )
+
     if raw_data is None:
         return None
 
